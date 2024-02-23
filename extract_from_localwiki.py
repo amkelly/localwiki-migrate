@@ -3,41 +3,38 @@
 #determine which (all?) of these endpoints can be filtered by region for extraction?
 
 import requests
+import json
 
 # Define the URLs for the LocalWiki API and Wikimedia API
 localwiki_api_url = "https://localwiki.org/api/v4/"
-wikimedia_api_url = "https://wikimedia/api"
-region_slug = "hsl"
 
-def fetch_data_from_localwiki(region_slug):
+responses = []
+initial_url = f"{localwiki_api_url}pages/?region=23"
+file_path = 'data/responses1.json'
+
+def fetch_data_from_localwiki(pages_url):
     """
     Fetches data from the LocalWiki API for a specific region.
     """
-    # Construct the URL for the specific region
-    pages_url = f"{localwiki_api_url}pages/"
-    
-    # Parameters to be passed in the URL
-    params = {'region': 23}
-    
+  
     # Send a GET request to the LocalWiki API for the specific region
-    response = requests.get(pages_url, params=params)
+    try:
+            response = requests.get(pages_url)
+            response.raise_for_status()  # Raises stored HTTPError, if one occurred.
+    except requests.exceptions.RequestException as err:
+            print(f"Error fetching data from LocalWiki API for {pages_url}: {err}")
+            return None
+        
     print(response.url)
-    if response.status_code == 200:
-        return response.json()  # Return JSON response
+    return response.json()  # Return JSON response
+
+next_page_url = initial_url
+while next_page_url is not None:
+    data = fetch_data_from_localwiki(next_page_url)
+    if data is not None:
+        with open(file_path, 'a') as outfile:
+            json.dump(data, outfile)
+            outfile.write('\n')  # Newline separates each JSON object for readability
+        next_page_url = data['next']  # Update the next page URL for the next iteration
     else:
-        # If request fails, print error message and return None
-        print(f"Failed to fetch data from LocalWiki API for region {region_slug}. Status code: {response.status_code}")
-        return None
-
-
-# Fetch data from LocalWiki API
-
-localwiki_data = fetch_data_from_localwiki(region_slug)
-total_results = []
-   
-if localwiki_data:
-    #Iterate through each page/object in the LocalWiki data and write to Wikimedia
-    for key, value in localwiki_data.items():
-        print(f"{key}: {value}")
-        total_results.append(localwiki_data['results'])
-    #print(total_results)
+        break  # Exit the loop if fetching data fails
