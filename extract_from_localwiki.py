@@ -24,7 +24,7 @@ responses = []
 initial_url = f"{localwiki_api_url}{args.endpoint}/?region=23"
 print("initialurl:")
 print(initial_url)
-json_path = f"data/{args}_responses.json"
+json_path = f"data/{args.endpoint}_responses.json"
 files_path = 'data/files'
 
 def fetch_data_from_localwiki(url):
