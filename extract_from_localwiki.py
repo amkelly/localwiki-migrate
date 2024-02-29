@@ -14,26 +14,21 @@ parser.add_argument('endpoint', type=str, help='The local wiki API endpoint to d
 
 # Parse the arguments
 args = parser.parse_args()
-print("args:")
-print(args)
 
 # Define the URLs for the LocalWiki API and Wikimedia API
 localwiki_api_url = "https://localwiki.org/api/v4/"
-
 responses = []
 initial_url = f"{localwiki_api_url}{args.endpoint}/?region=23"
-print("initialurl:")
-print(initial_url)
 json_path = f"data/{args.endpoint}_responses.json"
-files_path = 'data/files'
+files_path = f"data/{args.endpoint}/"
 
 def fetch_data_from_localwiki(url):
     """
     Fetches data from the LocalWiki API for a specific endpoint and region.
     """
     # Construct the URL based on the endpoint
-    if args.endpoint not in ['files', 'redirects', 'files_history', 'tags_history', 'redirects_history', 'regions', 'maps', 'maps_history', 'pages_history', 'users', 'pages']:
-        print(f"Invalid endpoint: {args.endpoint}. Please choose from: files, redirects, files_history, tags_history, redirects_history, regions, maps, maps_history, pages_history, users, pages.")
+    if args.endpoint not in ['files', 'redirects', 'files_history', 'tags_history', 'redirects_history', 'regions', 'maps', 'maps_history', 'pages_history', 'pages']:
+        print(f"Invalid endpoint: {args.endpoint}. Please choose from: files, redirects, files_history, tags_history, redirects_history, regions, maps, maps_history, pages_history, pages.")
         return None
 
     # Send a GET request to the LocalWiki API for the specific endpoint and region
@@ -92,30 +87,19 @@ def download_files_from_json(file_path, download_dir, max_retries=3):
             except json.JSONDecodeError:
                 print("Error parsing JSON. Skipping this line.")
 
-next_pages_url = initial_url
-while next_pages_url is not None:
-    data = fetch_data_from_localwiki(next_pages_url)
+next_url = initial_url
+while next_url is not None:
+    data = fetch_data_from_localwiki(next_url)
     if data is not None:
         with open(json_path, 'a') as outfile:
             json.dump(data, outfile)
             outfile.write('\n')  # Newline separates each JSON object for readability
-        next_pages_url = data['next']  # Update the next page URL for the next iteration
+        next_url = data['next']  # Update the next page URL for the next iteration
     else:
-        time.wait(1)
-        data = fetch_data_from_localwiki(next_pages_url)
-
-
-next_files_url = initial_url
-while next_files_url is not None:
-    data = fetch_data_from_localwiki(next_files_url)
-    if data is not None:
-        with open(files_path, 'a') as outfile:
-            json.dump(data, outfile)
-            outfile.write('\n')  # Newline separates each JSON object for readability
-        next_files_url = data['next']  # Update the next page URL for the next iteration
-    else:
-        time.wait(1)
-        data = fetch_data_from_localwiki(next_files_url)
+        time.sleep(1)
+        data = fetch_data_from_localwiki(next_url)
 
 if args=="files":
     download_files_from_json(json_path, files_path)
+else: 
+    exit()
