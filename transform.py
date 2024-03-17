@@ -70,13 +70,13 @@ def process_json_data(input_file_path, output_file_path):
     else:
         print("Failed to load JSON data.")
 
-
+'''
 # Example usage
 if __name__ == "__main__":
     input_file_path = 'sample_in.json'
     output_file_path = 'sample_out.json'
     
     process_json_data(input_file_path, output_file_path)
+'''
 
-
-#transform_content(sample_localwiki_data['content'])
+transform_content(sample_localwiki_data['content'])

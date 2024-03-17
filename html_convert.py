@@ -67,6 +67,7 @@ class LocalWikiHTMLToWikimediaParser(html.parser.HTMLParser):
             self.href = None
             self.link_text = None
         elif tag == 'span' and self.in_span_tag:
+            self.result.append(f"]]")
             self.in_span_tag = False
         elif tag == 'span':
             pass
@@ -81,7 +82,7 @@ class LocalWikiHTMLToWikimediaParser(html.parser.HTMLParser):
         if self.in_anchor:
             self.link_text = data
         elif self.in_span_tag and self.image_caption is not None:
-            self.result.append(f"|{data}]]")
+            self.result.append(f"|{data}")
             return 
         else:
             self.result.append(data)
