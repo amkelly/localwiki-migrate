@@ -95,6 +95,7 @@ class LocalWikiHTMLToWikimediaParser(html.parser.HTMLParser):
 def parse_and_convert(html_content):
     html_content = html_content.replace('\n', '')
     html_content = html_content.replace('\t', '')
+    html_content = html_content.replace('_files/', '')
     parser = LocalWikiHTMLToWikimediaParser()
     parser.feed(html_content)
     #mediawiki_image = parser.get_mediawiki_image()
