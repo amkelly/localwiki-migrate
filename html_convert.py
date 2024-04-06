@@ -37,13 +37,15 @@ class LocalWikiHTMLToWikimediaParser(html.parser.HTMLParser):
         elif tag == 'span' and 'class' in attrs_dict and attrs_dict['class'] == 'image_caption' and self.in_span_tag:
             #print("handle data function output:")
             #self.image_caption = self.data
-            self.result.append(f"[[File:{self.image_src}|{self.alignment}frame|{self.width}")
+            self.result.append(f"[[File:{self.image_src}|{self.alignment}thumb|{self.width}")
         elif tag == 'span' and self.in_span_tag:
             self.in_span_tag = False
         elif tag == 'p':
             self.result.append('\n\n')
         elif tag == 'strong':
             self.result.append("'''")
+        elif tag == 'em':
+            self.result.append("''")
         elif tag == 'ul':
             pass
         elif tag == 'li':
@@ -51,7 +53,7 @@ class LocalWikiHTMLToWikimediaParser(html.parser.HTMLParser):
         elif tag == 'h2':
             self.result.append('\n\n## ') 
         elif tag == 'hr':
-            self.result.append('-----')
+            self.result.append('\n-----')
         elif tag == 'ol':
             self.result.append('# ')
         else:
@@ -73,6 +75,8 @@ class LocalWikiHTMLToWikimediaParser(html.parser.HTMLParser):
             pass
         elif tag == 'strong':
             self.result.append("'''")
+        elif tag == 'em':
+            self.result.append("''")
         elif tag == 'li' or tag == 'ul' or tag == 'h2' or tag == 'p' or tag == 'hr' or tag == 'ol':
             pass
         else:
