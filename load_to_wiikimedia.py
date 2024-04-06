@@ -9,7 +9,15 @@ sample_localwiki_data = {
     'tags': []
     }
 
-def write_to_wikimedia(data):
+sample_files_data = {
+    "url": "https://localwiki.org/api/v4/files/159559/", 
+    "name": "Swenson.jpg", 
+    "file": "https://localwiki.org/media/pages/files/kgtnl2j0fkmd6jcb.jpg", 
+    "slug": "indian carry road", 
+    "region": "https://localwiki.org/api/v4/regions/23/"
+    }
+
+def add_to_wikimedia(data, flag):
 
     # Define the base URL for the MediaWiki API
     mediawiki_api_url = "https://wiki.historicsaranaclake.org/api.php"
@@ -93,6 +101,46 @@ def write_to_wikimedia(data):
             print("Failed to create page.")
             print(response.text)
 
+    def upload_file(name, file, userid, token, login_cookie):
+        """
+        Get CSRF token and write a file using MediaWiki API.
+        https://www.mediawiki.org/wiki/API:Upload 
+        """
+       
+        params = {
+            "action": "query",
+            "format": "json",
+            "meta": "tokens",
+            "formatversion": "2"
+        }
+
+        response = requests.get(mediawiki_api_url, params=params, cookies=login_cookie)
+        print(response.url)
+        data = response.json()
+        csrf_token = data["query"]["tokens"]["csrftoken"]
+        print(f'csrf_token: {csrf_token}')
+
+        file_path = './data/' + '/'.join(file.split('/')[5:])
+        print(file_path)
+        file = {'file':(name, open(file_path, 'rb'), 'multipart/form-data')}
+
+        payload = {
+            "action": "upload",
+            "filename": name,
+            "file": file,
+            "format": "json",
+            "bot": True,
+            "userid": userid,
+            "token": csrf_token
+        }
+        response = requests.post(mediawiki_api_url, files=file, data=payload, cookies=login_cookie)
+        data = response.json()
+        if "edit" in data and "result" in data["edit"] and data["edit"]["result"] == "Success":
+            print("Page created successfully.")
+        else:
+            print("Failed to upload file.")
+            print(response.text)
+
     # Step 1: Get login token
     login_token, login_cookie = get_login_token()
     print(login_token)
@@ -105,8 +153,15 @@ def write_to_wikimedia(data):
     if userid and login_token:
         # Step 3: Write new page using data from LocalWiki API response
         # Assume localwiki_data contains response from previous LocalWiki API call
-        title = sample_localwiki_data["name"]
-        text = sample_localwiki_data["content"]
-        write_page(title, text, userid, login_token, login_cookie)
+        if flag == 'p':
+            write_page(title, text, userid, login_token, login_cookie)
+            #title = sample_localwiki_data["name"]
+            #text = sample_localwiki_data["content"]
+        if flag == 'f':
+            name = sample_files_data["name"]
+            file = sample_files_data["file"]
+            upload_file(name, file, userid, login_token, login_cookie)
+        else:
+            print("no flag provided.")
 
-write_to_wikimedia(sample_localwiki_data)
+add_to_wikimedia(sample_localwiki_data, flag)
