@@ -102,5 +102,4 @@ def parse_and_convert(html_content):
     html_content = html_content.replace('_files/', '')
     parser = LocalWikiHTMLToWikimediaParser()
     parser.feed(html_content)
-    #mediawiki_image = parser.get_mediawiki_image()
     return parser.get_wikimedia_syntax()

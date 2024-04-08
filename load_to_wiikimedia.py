@@ -77,7 +77,7 @@ def write_page(title, content, userid, token, login_cookie):
         print("Page created successfully.")
     else:
         print("Failed to create page.")
-        logging.error(f"Failed to create page: {title} Response: response.text")
+        logging.error(f"Failed to create page: ['{title}','{content}'] Response: {response.text}")
 
 def upload_file(name, file, userid, token, login_cookie):
     """
@@ -115,10 +115,11 @@ def upload_file(name, file, userid, token, login_cookie):
         print("Page created successfully.")
     else:
         print("Failed to upload file.")
-        logging.error(f"Failed to create page: {name} Response: response.text")
+        logging.error(f"Failed to create page: ['{name}','{file}'] Response: {response.text}")
 
 #set up error logging
 logging.basicConfig(filename='error_log.txt', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='info_log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 #sample data
 sample_localwiki_data = {
@@ -152,6 +153,8 @@ userid, login_token, login_cookie = login(login_token, login_cookie)
 
 #Step 3: if Steps 1 & 2 complete determine which 
 mode_flag = 'p'
+pagecount = 0
+filecount = 0
 
 if userid and login_token:
     # Step 3: Write new page using data from LocalWiki API response
@@ -159,7 +162,7 @@ if userid and login_token:
     print("login successful...")
     if mode_flag == 'p':
         # Open a JSON file
-        with open('./data/pages_responses_short.json', 'r') as file:
+        with open('./data/pages_responses.json', 'r') as file:
         # Loop through each line of responses in the file
         # each line is effectivly a json file.
             for line in file:
@@ -167,7 +170,9 @@ if userid and login_token:
                 for r in json_obj["results"]:
                     name = r['name']
                     text = parse_and_convert(r['content'])
-                    print(text)
+                    pagecount += 1
+                    percent_complete = pagecount / 8104
+                    logging.info(f"{percent_complete}% Wrote page {pagecount}: {name}")
                     #write_page(title, content, userid, login_token, login_cookie)
 
     if mode_flag == 'f':
@@ -176,4 +181,3 @@ if userid and login_token:
         upload_file(name, file, userid, login_token, login_cookie)
     else:
         print("no flag provided.")
-
