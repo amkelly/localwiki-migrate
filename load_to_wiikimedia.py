@@ -46,7 +46,7 @@ def login(login_token, login_cookie):
         print("Login failed.")
         return None, None
     
-def write_page(title, content, userid, token, login_cookie):
+def write_page(title, content, userid, token, login_cookie, page_count):
     """ Get CSRF token and write a new page using MediaWiki API."""
 
     params = {
@@ -79,10 +79,12 @@ def write_page(title, content, userid, token, login_cookie):
         print("Failed to create page.")
         logging.error(f"Failed to create page: ['{title}','{content}'] Response: {response.text}")
 
-def upload_file(name, file, userid, token, login_cookie):
+def upload_file(name, file_url, userid, token, login_cookie, file_count):
     """
+    using Localwiki API's files data to upload files, 
     Get CSRF token and write a file using MediaWiki API.
-    https://www.mediawiki.org/wiki/API:Upload 
+    As localwiki provides URL of the files, use Example 2: Upload file from URL from 
+    https://www.mediawiki.org/wiki/API:Upload
     """
     
     params = {
@@ -98,28 +100,46 @@ def upload_file(name, file, userid, token, login_cookie):
     csrf_token = data["query"]["tokens"]["csrftoken"]
     print(f'csrf_token: {csrf_token}')
 
-    file_path = './data/' + '/'.join(file.split('/')[5:])
+    '''file_path = './data/' + '/'.join(file.split('/')[5:])
     print(file_path)
-    file = {'file':(name, open(file_path, 'rb'), 'multipart/form-data')}
+    file = {'file':(name, open(file_path, 'rb'), 'multipart/form-data')}'''
 
     payload = {
         "action": "upload",
         "filename": name,
-        "file": file,
+        "url": file_url,
         "format": "json",
-        "token": csrf_token
+        "token": csrf_token,
+        "ignorewarnings": 1
     }
-    response = requests.post(mediawiki_api_url, files=file, data=payload, cookies=login_cookie)
-    data = response.json()
-    if "edit" in data and "result" in data["edit"] and data["edit"]["result"] == "Success":
-        print("Page created successfully.")
-    else:
-        print("Failed to upload file.")
-        logging.error(f"Failed to create page: ['{name}','{file}'] Response: {response.text}")
 
-#set up error logging
-logging.basicConfig(filename='error_log.txt', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
-logging.basicConfig(filename='info_log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    upload_finished = False
+    file_count += 1
+    file_percent_complete = file_count / 13316
+
+    while upload_finished == False:
+        response = requests.post(mediawiki_api_url, data=payload, cookies=login_cookie)
+        data = response.json()
+        print(data)
+        if "upload" in data and "result" in data["upload"] and data["upload"]["result"] == "Success":
+            print("File created successfully.")
+            logging.info(f"{file_count} - {file_percent_complete}% {name} from {file_url} uploaded.")
+            upload_finished = True
+        elif data["error"]["code"] == "http-bad-status":
+            #retry upload with same parameters
+            continue
+        elif data["error"]["code"] == "fileexists-no-change":
+            logging.info(f"{file_count} - {file_percent_complete}% {name} from {file_url} already exists.")
+            upload_finished = True
+        else:
+            print("Failed to upload file.")
+            logging.error(f"Failed to create page: ['{name}','{file_url}'] Response: {response.text}")
+            break
+    else:
+         return(file_count)
+
+#set up logging
+logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 #sample data
 sample_localwiki_data = {
@@ -152,9 +172,9 @@ login_token, login_cookie = get_login_token()
 userid, login_token, login_cookie = login(login_token, login_cookie)
 
 #Step 3: if Steps 1 & 2 complete determine which 
-mode_flag = 'p'
-pagecount = 0
-filecount = 0
+mode_flag = 'f'
+page_count = 0
+file_count = 0
 
 if userid and login_token:
     # Step 3: Write new page using data from LocalWiki API response
@@ -176,8 +196,17 @@ if userid and login_token:
                     #write_page(title, content, userid, login_token, login_cookie)
 
     if mode_flag == 'f':
-        name = sample_files_data["name"]
-        file = sample_files_data["file"]
-        upload_file(name, file, userid, login_token, login_cookie)
+        #name = sample_files_data["name"]
+        #file_url = sample_files_data["file"]
+                # Open a JSON file
+        with open('./data/files_responses.json', 'r') as file:
+        # Loop through each line of responses in the file
+        # each line is effectivly a json file.
+            for line in file:
+                json_obj = json.loads(line)
+                for r in json_obj["results"]:
+                    name = r['name']
+                    file_url = r['file']
+                    file_count = upload_file(name, file_url, userid, login_token, login_cookie, file_count)
     else:
         print("no flag provided.")
