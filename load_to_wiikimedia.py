@@ -137,6 +137,7 @@ def upload_file(name, file_url, userid, token, login_cookie, file_count):
             break
     else:
          return(file_count)
+    return(file_count)
 
 # Create a logger
 logger = logging.getLogger('my_logger')
@@ -193,6 +194,7 @@ userid, login_token, login_cookie = login(login_token, login_cookie)
 mode_flag = 'f'
 page_count = 0
 file_count = 0
+file_resume_count = 50
 
 if userid and login_token:
     # Step 3: Write new page using data from LocalWiki API response
@@ -225,6 +227,10 @@ if userid and login_token:
                 for r in json_obj["results"]:
                     name = r['name']
                     file_url = r['file']
-                    file_count = upload_file(name, file_url, userid, login_token, login_cookie, file_count)
+                    if file_resume_count > file_count:
+                        file_count += 1
+                        continue
+                    else:
+                        file_count = upload_file(name, file_url, userid, login_token, login_cookie, file_count)
     else:
         print("no flag provided.")
