@@ -77,7 +77,7 @@ def write_page(title, content, userid, token, login_cookie, page_count):
         print("Page created successfully.")
     else:
         print("Failed to create page.")
-        logging.error(f"Failed to create page: ['{title}','{content}'] Response: {response.text}")
+        logger.error(f"Failed to create page: ['{title}','{content}'] Response: {response.text}")
 
 def upload_file(name, file_url, userid, token, login_cookie, file_count):
     """
@@ -123,23 +123,41 @@ def upload_file(name, file_url, userid, token, login_cookie, file_count):
         print(data)
         if "upload" in data and "result" in data["upload"] and data["upload"]["result"] == "Success":
             print("File created successfully.")
-            logging.info(f"{file_count} - {file_percent_complete}% {name} from {file_url} uploaded.")
+            logger.info(f"{file_count} - {file_percent_complete}% {name} from {file_url} uploaded.")
             upload_finished = True
         elif data["error"]["code"] == "http-bad-status":
             #retry upload with same parameters
             continue
         elif data["error"]["code"] == "fileexists-no-change":
-            logging.info(f"{file_count} - {file_percent_complete}% {name} from {file_url} already exists.")
+            logger.info(f"{file_count} - {file_percent_complete}% {name} from {file_url} already exists.")
             upload_finished = True
         else:
             print("Failed to upload file.")
-            logging.error(f"Failed to create page: ['{name}','{file_url}'] Response: {response.text}")
+            logger.error(f"Failed to create page: ['{name}','{file_url}'] Response: {response.text}")
             break
     else:
          return(file_count)
 
-#set up logging
-logging.basicConfig(filename='log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Create a logger
+logger = logging.getLogger('my_logger')
+logger.setLevel(logging.DEBUG) # Set the logger's level to DEBUG so it captures all messages
+
+# Create handlers
+error_handler = logging.FileHandler('error_log.txt')
+error_handler.setLevel(logging.ERROR) # Only handle ERROR and above
+
+info_handler = logging.FileHandler('info_log.txt')
+info_handler.setLevel(logging.INFO) # Only handle INFO and above
+
+# Create formatters and add it to handlers
+error_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+info_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+error_handler.setFormatter(error_format)
+info_handler.setFormatter(info_format)
+
+# Add handlers to the logger
+logger.addHandler(error_handler)
+logger.addHandler(info_handler)
 
 #sample data
 sample_localwiki_data = {
