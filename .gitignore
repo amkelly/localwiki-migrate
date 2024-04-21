@@ -1,3 +1,7 @@
 data/
 data/responses1.json
 data/responses1.json
+error_log.txt
+info_log.txt
+log.txt
+__pycache__/html_convert.cpython-312.pyc
