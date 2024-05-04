@@ -56,6 +56,12 @@ class LocalWikiHTMLToWikimediaParser(html.parser.HTMLParser):
             self.result.append('\n-----')
         elif tag == 'ol':
             self.result.append('# ')
+        elif tag == 'table':
+            self.result.append('{|\n')
+        elif tag == 'tr':
+            self.result.append('|-/n')
+        elif tag == 'td':
+            self.result.append('|')        
         else:
             Warning(tag)
             self.result.append(self.get_starttag_text())
@@ -77,6 +83,12 @@ class LocalWikiHTMLToWikimediaParser(html.parser.HTMLParser):
             self.result.append("'''")
         elif tag == 'em':
             self.result.append("''")
+        elif tag == 'table':
+            self.result.append('\n|}')
+        elif tag == 'tr':
+            self.result.append('/n')
+        elif tag == 'td':
+            self.result.append('|')
         elif tag == 'li' or tag == 'ul' or tag == 'h2' or tag == 'p' or tag == 'hr' or tag == 'ol':
             pass
         else:
