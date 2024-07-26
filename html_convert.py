@@ -8,12 +8,15 @@ class LocalWikiHTMLToWikimediaParser(html.parser.HTMLParser):
         self.href = None
         self.link_text = None
         self.in_span_tag = False
-        self.image_attributes = {}
+        self.img_src = ''
+        self.alignment = ''
         self.image_caption = ''
         self.span_attributes = {}
+        self.width = ''
 
     def handle_starttag(self, tag, attrs):
         attrs_dict = dict(attrs)
+        #print(attrs_dict)
         if tag == 'a':
             self.in_anchor = True
             for name, value in attrs:
@@ -30,14 +33,22 @@ class LocalWikiHTMLToWikimediaParser(html.parser.HTMLParser):
         elif tag == 'span' and 'class' in attrs_dict and attrs_dict['class'] == 'image_frame image_frame_border':
             self.in_span_tag = True
             self.alignment = ''
-        elif tag == 'img' and self.in_span_tag:
-            self.image_src = attrs_dict.get('src')
-            #print(attrs_dict)
-            self.width = attrs_dict['style'][7:12]
+            #or continue
+        elif tag == 'img':
+            # Capture the src attribute of the img tag
+            for name, value in attrs:
+                #print (name, value)
+                if name == 'src':
+                    self.image_src = value
+            self.result.append(f"[[File:{self.image_src}|{self.alignment}]]")
         elif tag == 'span' and 'class' in attrs_dict and attrs_dict['class'] == 'image_caption' and self.in_span_tag:
-            #print("handle data function output:")
-            #self.image_caption = self.data
+            self.in_span_tag = True
+            for name, value in attrs: 
+                if name == 'width':
+                    self.img_width = value
             self.result.append(f"[[File:{self.image_src}|{self.alignment}thumb|{self.width}")
+        elif tag == 'span' and 'class' in attrs_dict and attrs_dict['class'] == 'image_caption':
+            self.result.append(f"") #appears to be no new information in this tag but need caption contents.
         elif tag == 'span' and self.in_span_tag:
             self.in_span_tag = False
         elif tag == 'p':

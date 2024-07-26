@@ -176,6 +176,12 @@ sample_files_data = {
     "slug": "indian carry road", 
     "region": "https://localwiki.org/api/v4/regions/23/"
     }
+sample_pagewithtable = {"url": "https://localwiki.org/api/v4/pages/238037/", 
+                        "name": "Vic Macy", 
+                        "slug": "vic macy", 
+                        "content": "<p>\n\t<strong>Born: </strong>August 13, 1913</p>\n<p>\n\t<strong>Died:</strong> April 29, 1970</p>\n<p>\n\t<strong>Married: </strong>Stella Paquin</p>\n<p>\n\t<strong>Children:</strong> Donald Macy</p>\n<p>\n\t<strong>Victor Macy</strong> operated the <a href=\"Cedar%20Post%20restaurant\">Cedar Post restaurant</a> on <a href=\"Lake%20Flower%20Avenue\">Lake Flower Avenue</a>.\u00a0 From 1945 to 1950 he lived at <a href=\"23%20McIntyre%20Street\">23 McIntyre Street</a>.\u00a0 He later moved to <a href=\"175%20Lake%20Flower%20Avenue\">175 Lake Flower Avenue</a>, site of the restaurant, where he lived from 1962 to 1967.</p>\n<hr>\n<p class=\"MsoNormal\">\n\t<em>Adirondack Daily Enterprise</em>, April 30, 1970</p>\n<p class=\"MsoNormal\">\n\tVictor Macy, owner and operator of the Cedar Post Restaurant, died suddenly Wednesday morning at his home at Edward St. Extension. He was 56 years of age.</p>\n<p class=\"MsoNormal\">\n\tMr. Macy was born Aug. 13, 1913 in <a href=\"Goldsmith\">Goldsmith</a>, a son of Frank and Rose Amell Macy. He was a member of BPOE Lodge 1508, the Saranac Lake Moose Lodge and was a third and fourth degree-Knight-of Columbus.</p>\n<p class=\"MsoNormal\">\n\tSurvivors include his wile, Stella Paquin Macy whom he married in 1935, a son, Donald of Peekskill; three grandchildren; three brothers, Edward of Upton, Wyo., Philip and John of Saranac Lake; four sisters, Mrs. Helen Mose of Saranac Lake, Mrs. Philomene Gardner of Saranac Lake, Mrs. Alfina Murray of Saranac Lake and Mrs. Alma Monaghan of Owls Head; and several nieces and nephews.</p>\n<p class=\"MsoNormal\">\n\tFriends may call at the <a href=\"Fortune%20Funeral%20Home\">Fortune Funeral Home</a>. An Elks service will be held there 7:30 this evening and a Knights of Columbus Rosary service will be held at 8:15. A Funeral Mass will be offered at 11:15 a.m. Friday at <a href=\"St.%20Bernard's%20Church\">St. Bernard's Church</a>. Burial will be in <a href=\"St.%20Bernard's%20Cemetery\">St. Bernard's Cemetery</a>.</p>\n<h2>\n\tComments</h2>\n<p>\n\t\u00a0</p>\n", 
+                        "region": "https://localwiki.org/api/v4/regions/23/", }
+
 
 # Define the base URL for the MediaWiki API
 mediawiki_api_url = "https://wiki.historicsaranaclake.org/api.php"
@@ -191,7 +197,7 @@ login_token, login_cookie = get_login_token()
 userid, login_token, login_cookie = login(login_token, login_cookie)
 
 #Step 3: if Steps 1 & 2 complete determine which 
-mode_flag = 'f'
+mode_flag = 'p'
 page_count = 0
 file_count = 0
 file_resume_count = 50
@@ -209,10 +215,11 @@ if userid and login_token:
                 json_obj = json.loads(line)
                 for r in json_obj["results"]:
                     name = r['name']
+                    print(r['content'])
                     text = parse_and_convert(r['content'])
-                    pagecount += 1
-                    percent_complete = pagecount / 8104
-                    logging.info(f"{percent_complete}% Wrote page {pagecount}: {name}")
+                    page_count += 1
+                    percent_complete = page_count / 8104
+                    logging.info(f"{percent_complete}% Wrote page {page_count}: {name}")
                     #write_page(title, content, userid, login_token, login_cookie)
 
     if mode_flag == 'f':
