@@ -214,13 +214,12 @@ if userid and login_token:
             for line in file:
                 json_obj = json.loads(line)
                 for r in json_obj["results"]:
-                    name = r['name']
-                    print(r['content'])
-                    text = parse_and_convert(r['content'])
+                    title = r['name']
+                    content = parse_and_convert(r['content'])
                     page_count += 1
                     percent_complete = page_count / 8104
-                    logging.info(f"{percent_complete}% Wrote page {page_count}: {name}")
-                    #write_page(title, content, userid, login_token, login_cookie)
+                    logging.info(f"{percent_complete}% Wrote page {page_count}: {title}")
+                    write_page(title, content, userid, login_token, login_cookie, page_count)
 
     if mode_flag == 'f':
         #name = sample_files_data["name"]
