@@ -16,10 +16,10 @@ def edit_page_image(page_id, page_text, userid, token, login_cookie):
         "formatversion": "2"
     }
     response = requests.get(mediawiki_api_url, params=params, cookies=login_cookie)
-    print(response.url)
+    #print(response.url)
     data = response.json()
     csrf_token = data["query"]["tokens"]["csrftoken"]
-    print(f'csrf_token: {csrf_token}')
+    #print(f'csrf_token: {csrf_token}')
 
     payload = {
         "action": "edit",
@@ -27,16 +27,15 @@ def edit_page_image(page_id, page_text, userid, token, login_cookie):
         "text": page_text,
         "format": "json",
         "bot": True,
-        "userid": userid,
         "token": csrf_token
     }
     response = requests.post(mediawiki_api_url, data=payload, cookies=login_cookie)
     data = response.json()
-    print(data)
+    #print(data)
     if "edit" in data and "result" in data["edit"] and data["edit"]["result"] == "Success":
-        print("Page created successfully.")
+        print(f"Page {page_id} edited successfully.")
     else:
-        print("Failed to create page.")
+        print(f"Failed to edit page {page_id}.")
         #logger.error(f"Failed to create page: ['{title}','{content}'] Response: {response.text}")
 
 def get_page_contents(page_id):
@@ -51,7 +50,7 @@ def get_page_contents(page_id):
     response = requests.get(mediawiki_api_url, params=params, cookies=login_cookie)
     data = response.json()
     csrf_token = data["query"]["tokens"]["csrftoken"]
-    print(f'csrf_token: {csrf_token}')
+    #print(f'csrf_token: {csrf_token}')
 
     payload = {
         "action": "parse",
@@ -76,7 +75,7 @@ def remove_photo_dupe(wikitext):
         # Replace duplicates with second instance of tag, keeping the |thumb| version
         deduplicated_text = re.sub(pattern, r'\2', wikitext)
         
-        print(f'Deduplicated text: {deduplicated_text[:200]}...')  # Print first 200 chars of deduplicated text
+        #print(f'Deduplicated text: {deduplicated_text[:200]}...')  # Print first 200 chars of deduplicated text
         print(f'Number of replacements: {wikitext.count("[[File:") - deduplicated_text.count("[[File:")}')
         # Return the deduplicated text
         return deduplicated_text
@@ -95,7 +94,7 @@ login_token, login_cookie = get_login_token()
 # Step 2: Log in
 userid, login_token, login_cookie = login(login_token, login_cookie)
 
-page_id = 9981
+page_id = 14473
 
 # main loop
 while page_id < 17394:
